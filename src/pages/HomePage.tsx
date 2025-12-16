@@ -89,7 +89,6 @@ export default function HomePage() {
     AOS.init({
       duration: 800,
       once: true,
-      disable: 'mobile'
     });
   }, []);
 
