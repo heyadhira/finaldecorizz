@@ -175,7 +175,7 @@ export default function ProductDetailPage() {
       selected: selectedImage === product.image,
     });
     if (selectedFormat === 'Frame' && product.imagesByColor) {
-      Object.entries(product.imagesByColor).forEach(([color, url]) => {
+      Object.entries(product.imagesByColor as Record<string, string>).forEach(([color, url]) => {
         if (url) {
           items.push({
             src: url,
@@ -204,7 +204,7 @@ export default function ProductDetailPage() {
       alt: 'Frame Body',
       onClick: () => setSelectedImage(Scratched),
       selected: selectedImage === Scratched,
-      label: 'Frame Body',
+      // label: 'Frame Body',
     });
     const materialLabel =
       selectedFormat === 'Canvas'
@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
         alt: materialLabel,
         onClick: () => setSelectedImage(src),
         selected: selectedImage === src,
-        label: materialLabel,
+        // label: materialLabel,
       });
     });
     return items;
@@ -317,18 +317,20 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!product) return;
-    if (selectedImage) return;
+
     if (selectedFormat === 'Frame') {
       const srcByColor = product.imagesByColor?.[selectedColor];
-      if (srcByColor) {
-        setSelectedImage(srcByColor);
-      } else {
-        if (selectedColor === 'Black') setSelectedImage(Black);
-        else if (selectedColor === 'White') setSelectedImage(White);
-        else if (selectedColor === 'Brown') setSelectedImage(Brown);
+      const targetImage = srcByColor || (
+        selectedColor === 'Black' ? Black :
+          selectedColor === 'White' ? White :
+            selectedColor === 'Brown' ? Brown : null
+      );
+
+      if (targetImage && selectedImage !== targetImage) {
+        setSelectedImage(targetImage);
       }
     }
-  }, [selectedFormat, selectedColor, product, selectedImage]);
+  }, [selectedFormat, selectedColor, product]);
 
 
   const fetchRelatedProducts = async (category: string, currentId?: string) => {
