@@ -244,7 +244,7 @@ export default function AdminGallery() {
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+              className="px-6 py-3 bg-teal-600 text-white rounded-lg flex items-center gap-2 hover:bg-teal-700 transition"
             >
               <Plus className="w-5 h-5" />
               Add Photo
@@ -266,11 +266,11 @@ export default function AdminGallery() {
               {galleryItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                  className="bg-white rounded-xl shadow-sm border border-gray-200"
                 >
                   <ImageWithFallback
                     src={item.thumbUrl || item.image}
-                    className="w-full h-56 object-cover"
+                    className="w-full h-56 object-cover rounded-t-xl"
                     alt={item.title}
                   />
                   <div className="p-4">
@@ -291,20 +291,24 @@ export default function AdminGallery() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* Action Buttons */}
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-3 mt-4 relative z-10">
                       <button
+                        type="button"
                         onClick={() => openEdit(item)}
-                        className="w-full py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 px-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm active:scale-95"
+                        aria-label="Edit"
                       >
-                        <Edit className="w-4 h-4" />
-                        Edit
+                        <Edit className="w-5 h-5" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDelete(item.id)}
-                        className="w-full py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition flex items-center justify-center gap-2"
+                        className="flex-1 py-2.5 px-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center justify-center shadow-sm active:scale-95"
+                        aria-label="Delete"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -484,7 +488,7 @@ export default function AdminGallery() {
                   <button
                     type="submit"
                     disabled={uploading}
-                    className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-lg bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {uploading ? "Uploading..." : "Upload Photo"}
                   </button>
@@ -668,7 +672,7 @@ export default function AdminGallery() {
                   <button
                     type="submit"
                     disabled={uploading}
-                    className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 rounded-lg bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {uploading ? "Updating..." : "Update Photo"}
                   </button>

@@ -97,7 +97,7 @@ export default function AdminDashboard() {
       title: "Total Orders",
       value: stats.totalOrders,
       icon: <Package className="w-7 h-7" />,
-      bg: "bg-blue-100 text-blue-600",
+      bg: "bg-teal-100 text-[#14b8a6]",
     },
     {
       title: "Total Revenue",

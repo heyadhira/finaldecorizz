@@ -76,7 +76,7 @@ function ProductCardComponent({
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`/product/${(product.category || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${(product.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
       className="
     bg-white
     rounded-lg
@@ -161,7 +161,7 @@ function ProductCardComponent({
 
                 <div className="flex items-center gap-3">
                   <Link
-                    to={`/product/${product.id}`}
+                    to={`/product/${(product.category || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-')}/${(product.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                     className="premium-btn-white"
                     onClick={() => setOpen(false)}
                   >

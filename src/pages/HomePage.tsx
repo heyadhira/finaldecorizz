@@ -432,7 +432,7 @@ export default function HomePage() {
                               src={v.url}
                               className="w-full object-cover rounded-lg"
                               autoPlay
-
+                              muted
                               loop
                               playsInline
                             />

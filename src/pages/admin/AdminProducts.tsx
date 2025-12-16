@@ -327,7 +327,7 @@ const [extraImagePreviews, setExtraImagePreviews] = useState<string[]>([]);
 
           <button
             onClick={() => openModal()}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
           >
             <Plus className="w-5 h-5" />
             Add Product
@@ -391,7 +391,7 @@ const [extraImagePreviews, setExtraImagePreviews] = useState<string[]>([]);
                       <div className="flex gap-3">
                         <button
                           onClick={() => openModal(product)}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="text-[#14b8a6] hover:text-teal-700"
                         >
                           <Edit className="w-5 h-5" />
                         </button>

@@ -149,7 +149,7 @@ export default function AdminTestimonials() {
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2 rounded-lg hover:bg-teal-700"
           >
             <Plus className="w-5 h-5" />
             Add Testimonial
@@ -228,7 +228,7 @@ export default function AdminTestimonials() {
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700"
                 >
                   Add Testimonial
                 </button>

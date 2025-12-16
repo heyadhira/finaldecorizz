@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useMemo,useRef } from 'react';
+import React, { useEffect, useState, useContext, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -24,7 +24,7 @@ import Bubble from "../assets/bubble.png";
 
 
 export default function ProductDetailPage() {
-  const { id } = useParams();
+  const { id, category: categoryParam, name: nameParam } = useParams();
   const navigate = useNavigate();
   const { user, accessToken } = useContext(AuthContext);
 
@@ -135,7 +135,7 @@ export default function ProductDetailPage() {
     el.scrollTo({ left: 0, behavior: 'smooth' });
     updateThumbScrollState();
   }, [selectedFormat, selectedColor]);
-  
+
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 640px)');
     const update = () => setThumbLimit(mq.matches ? 3 : 6);
@@ -210,8 +210,8 @@ export default function ProductDetailPage() {
       selectedFormat === 'Canvas'
         ? 'Canvas Material'
         : selectedFormat === 'Rolled'
-        ? 'Rolled Material'
-        : 'Frame Material';
+          ? 'Rolled Material'
+          : 'Frame Material';
     [White, Black, Brown, Frame, CardBoard, Bubble].forEach((src, i) => {
       items.push({
         src,
@@ -267,23 +267,23 @@ export default function ProductDetailPage() {
     updateThumbScrollState();
   }, [selectedIndex, thumbItems.length]);
 
-useEffect(() => {
-  const container = imageContainerRef.current;
-  if (!container) return;
+  useEffect(() => {
+    const container = imageContainerRef.current;
+    if (!container) return;
 
-  const handleWheel = (e) => {
-    e.preventDefault();
-    if (e.deltaY < 0) {
-      setZoom((z) => Math.min(2.5, z + 0.1)); // zoom in
-    } else {
-      setZoom((z) => Math.max(0.9, z - 0.1)); // zoom out (10% min)
-    }
-  };
+    const handleWheel = (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        setZoom((z) => Math.min(2.5, z + 0.1)); // zoom in
+      } else {
+        setZoom((z) => Math.max(0.9, z - 0.1)); // zoom out (10% min)
+      }
+    };
 
-  container.addEventListener("wheel", handleWheel, { passive: false });
+    container.addEventListener("wheel", handleWheel, { passive: false });
 
-  return () => container.removeEventListener("wheel", handleWheel);
-}, []);
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, []);
 
   const updateOriginFromPoint = (clientX: number, clientY: number) => {
     const el = imageContainerRef.current as HTMLElement | null;
@@ -297,22 +297,22 @@ useEffect(() => {
 
   useEffect(() => {
     fetchProduct();
-  }, [id]);
+  }, [id, categoryParam, nameParam]);
 
-useEffect(() => {
-  const handler = () => {
-    document.querySelectorAll(".protect-image").forEach(el => {
-      el.classList.add("screenshot");
-      setTimeout(() => el.classList.remove("screenshot"), 1500);
+  useEffect(() => {
+    const handler = () => {
+      document.querySelectorAll(".protect-image").forEach(el => {
+        el.classList.add("screenshot");
+        setTimeout(() => el.classList.remove("screenshot"), 1500);
+      });
+    };
+
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "PrintScreen") handler();
     });
-  };
 
-  window.addEventListener("keyup", (e) => {
-    if (e.key === "PrintScreen") handler();
-  });
-
-  return () => window.removeEventListener("keyup", () => {});
-}, []);
+    return () => window.removeEventListener("keyup", () => { });
+  }, []);
 
 
   useEffect(() => {
@@ -331,10 +331,10 @@ useEffect(() => {
   }, [selectedFormat, selectedColor, product, selectedImage]);
 
 
-  const fetchProduct = async () => {
+  const fetchRelatedProducts = async (category: string, currentId?: string) => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-52d68140/products/${id}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-52d68140/products`,
         {
           headers: {
             Authorization: `Bearer ${publicAnonKey}`,
@@ -342,35 +342,73 @@ useEffect(() => {
         }
       );
       const data = await response.json();
+      const related = data.products
+        .filter((p: any) => p.category === category && p.id !== (currentId || id))
+        .slice(0, 4);
+      setRelatedProducts(related);
+    } catch (error) {
+      console.error('Fetch related products error:', error);
+    }
+  };
 
-    if (data.product) {
-  const p = data.product;
+  const fetchProduct = async () => {
+    try {
+      let p;
 
-const autoSize = p.sizes?.includes("8X12") ? "8X12" : p.sizes?.[0] || "";
-const autoColor = p.colors?.[0] || "";
-const autoFormat = p.format || "Rolled";
+      if (id) {
+        // Fetch by ID
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-52d68140/products/${id}`,
+          { headers: { Authorization: `Bearer ${publicAnonKey}` } }
+        );
+        const data = await response.json();
+        p = data.product;
+      } else if (nameParam) {
+        // Fetch list and find by slug
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-52d68140/products`,
+          { headers: { Authorization: `Bearer ${publicAnonKey}` } }
+        );
+        const data = await response.json();
+        const all = data.products || [];
 
-setProduct({
-  ...p,
-  selectedColor: autoColor,
-  defaultColor: autoColor,
-  selectedSize: autoSize,
-  defaultSize: autoSize,
-  selectedFormat: autoFormat,
-  defaultFormat: autoFormat,
-  selectedFrameColor: p.frameColor || "Black",
-});
+        p = all.find((item: any) => {
+          const itemSlug = (item.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return itemSlug === nameParam;
+        });
+      }
 
-// Update states too
-setSelectedSize(autoSize);
-setSelectedColor(autoColor);
-setSelectedFormat(autoFormat);
+      if (p) {
+        const data = { product: p }; // Mimic old structure for consistency if needed, or just use p
+
+        if (data.product) {
+          const p = data.product;
+
+          const autoSize = p.sizes?.includes("8X12") ? "8X12" : p.sizes?.[0] || "";
+          const autoColor = p.colors?.[0] || "";
+          const autoFormat = p.format || "Rolled";
+
+          setProduct({
+            ...p,
+            selectedColor: autoColor,
+            defaultColor: autoColor,
+            selectedSize: autoSize,
+            defaultSize: autoSize,
+            selectedFormat: autoFormat,
+            defaultFormat: autoFormat,
+            selectedFrameColor: p.frameColor || "Black",
+          });
+
+          // Update states too
+          setSelectedSize(autoSize);
+          setSelectedColor(autoColor);
+          setSelectedFormat(autoFormat);
 
 
 
-  fetchRelatedProducts(p.category);
-}
-
+          fetchRelatedProducts(p.category, p.id);
+        }
+      }
     } catch (error) {
       console.error('Fetch product error:', error);
     } finally {
@@ -437,25 +475,7 @@ setSelectedFormat(autoFormat);
     return value === null ? undefined : value ?? undefined;
   };
 
-  const fetchRelatedProducts = async (category: string) => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-52d68140/products`,
-        {
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-        }
-      );
-      const data = await response.json();
-      const related = data.products
-        .filter((p: any) => p.category === category && p.id !== id)
-        .slice(0, 4);
-      setRelatedProducts(related);
-    } catch (error) {
-      console.error('Fetch related products error:', error);
-    }
-  };
+
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -587,8 +607,8 @@ setSelectedFormat(autoFormat);
     }
   };
 
-  
-const mainImage = useMemo(() => {
+
+  const mainImage = useMemo(() => {
     if (!product) return "";
 
     // If user clicked a thumbnail → always priority
@@ -604,7 +624,7 @@ const mainImage = useMemo(() => {
 
     // Default → main product image
     return optimizeImage(product.image, 800);
-}, [product, selectedImage, selectedColor, selectedFormat]);
+  }, [product, selectedImage, selectedColor, selectedFormat]);
 
 
 
@@ -673,122 +693,122 @@ const mainImage = useMemo(() => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
           {/* Image Box */}
-         <div className="soft-card rounded-2xl bg-white p-4" style={{ color: '#94a3b8' }}>
-         
-<div
-  ref={imageContainerRef}
-  className="rounded-lg overflow-hidden bg-black/5"
-  style={{ height: "70vh", cursor: zoom > 1 ? "zoom-in" : "default" }}
-  onMouseMove={(e) => updateOriginFromPoint(e.clientX, e.clientY)}
-  onTouchMove={(e) => {
-    if (e.touches && e.touches[0]) updateOriginFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-  }}
->
-  <div
-    style={{
-      transform: `scale(${zoom})`,
-      transformOrigin: origin,
-      width: "100%",
-      height: "100%",
-      transition: "transform 0.2s ease-out",
-      willChange: "transform",
-    }}
-  >
+          <div className="soft-card rounded-2xl bg-white p-4" style={{ color: '#94a3b8' }}>
 
-    {/* 🔥 Image + Watermark Added Here */}
-<div className="relative w-full h-full protect-image">
+            <div
+              ref={imageContainerRef}
+              className="rounded-lg overflow-hidden bg-black/5"
+              style={{ height: "70vh", cursor: zoom > 1 ? "zoom-in" : "default" }}
+              onMouseMove={(e) => updateOriginFromPoint(e.clientX, e.clientY)}
+              onTouchMove={(e) => {
+                if (e.touches && e.touches[0]) updateOriginFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+              }}
+            >
+              <div
+                style={{
+                  transform: `scale(${zoom})`,
+                  transformOrigin: origin,
+                  width: "100%",
+                  height: "100%",
+                  transition: "transform 0.2s ease-out",
+                  willChange: "transform",
+                }}
+              >
 
-  {/* Main Product Image */}
-  <ImageWithFallback
-    src={mainImage}
-    alt={product.name}
-    loading="lazy"
-    decoding="async"
-    className="w-full h-full object-contain select-none"
-  />
+                {/* 🔥 Image + Watermark Added Here */}
+                <div className="relative w-full h-full protect-image">
 
-</div>
+                  {/* Main Product Image */}
+                  <ImageWithFallback
+                    src={mainImage}
+                    alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-contain select-none"
+                  />
 
-  </div>
-</div>
+                </div>
+
+              </div>
+            </div>
 
 
-   {/* --- THUMBNAIL STRIP – COLOR IMAGES + EXTRA IMAGES + MAIN IMAGE --- */}
-<div className="relative">
-  <button
-    onClick={() => handleArrow("left")}
-    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full border"
-    style={{ borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.6)", color: "#e5e7eb" }}
-  >
-    <ChevronLeft className="w-5 h-5" />
-  </button>
+            {/* --- THUMBNAIL STRIP – COLOR IMAGES + EXTRA IMAGES + MAIN IMAGE --- */}
+            <div className="relative">
+              <button
+                onClick={() => handleArrow("left")}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full border"
+                style={{ borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.6)", color: "#e5e7eb" }}
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
 
-  <div
-    ref={thumbStripRef}
-    className="thumbs-strip flex gap-3 overflow-x-auto pb-4 pt-4 no-scrollbar snap-x snap-mandatory"
-    onWheel={handleThumbWheel}
-    onKeyDown={handleThumbKeyDown}
-    onTouchStart={handleThumbTouchStart}
-    onTouchMove={handleThumbTouchMove}
-    onTouchEnd={handleThumbTouchEnd}
-  >
-    {thumbItems.map((item, index) => (
-      <div
-        key={index}
-        className={`thumb-item w-20 h-20 rounded-lg border cursor-pointer overflow-hidden snap-center shrink-0 transition 
+              <div
+                ref={thumbStripRef}
+                className="thumbs-strip flex gap-3 overflow-x-auto pb-4 pt-4 no-scrollbar snap-x snap-mandatory"
+                onWheel={handleThumbWheel}
+                onKeyDown={handleThumbKeyDown}
+                onTouchStart={handleThumbTouchStart}
+                onTouchMove={handleThumbTouchMove}
+                onTouchEnd={handleThumbTouchEnd}
+              >
+                {thumbItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`thumb-item w-20 h-20 rounded-lg border cursor-pointer overflow-hidden snap-center shrink-0 transition 
           ${item.selected ? "border-teal-500 shadow-md" : "border-gray-300"}`}
-        onClick={item.onClick}
-      >
-        <ImageWithFallback
-          src={optimizeImage(item.src, 160)}
-          alt={item.alt}
-          className="w-full h-full object-cover"
-        />
-        {item.label && (
-          <span className="absolute bottom-1 left-1 text-[10px] px-2 py-0.5 rounded bg-black/60 text-white">
-            {item.label}
-          </span>
-        )}
-      </div>
-    ))}
-  </div>
+                    onClick={item.onClick}
+                  >
+                    <ImageWithFallback
+                      src={optimizeImage(item.src, 160)}
+                      alt={item.alt}
+                      className="w-full h-full object-cover"
+                    />
+                    {item.label && (
+                      <span className="absolute bottom-1 left-1 text-[10px] px-2 py-0.5 rounded bg-black/60 text-white">
+                        {item.label}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-  <button
-    onClick={() => handleArrow("right")}
-    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full border"
-    style={{ borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.6)", color: "#e5e7eb" }}
-  >
-    <ChevronRight className="w-5 h-5" />
-  </button>
-</div>
+              <button
+                onClick={() => handleArrow("right")}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full border"
+                style={{ borderColor: "#334155", backgroundColor: "rgba(2,6,23,0.6)", color: "#e5e7eb" }}
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
 
 
-  {/* Zoom Buttons */}
-  <div className="flex items-center gap-2 mt-3">
-    <button
-      onClick={() => setZoom((z) => Math.min(2.5, z + 0.2))}
-      className="px-6 py-1 mt-6 rounded-lg border"
-      style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
-    >
-      Zoom In
-    </button>
+            {/* Zoom Buttons */}
+            <div className="flex items-center gap-2 mt-3">
+              <button
+                onClick={() => setZoom((z) => Math.min(2.5, z + 0.2))}
+                className="px-6 py-1 mt-6 rounded-lg border"
+                style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
+              >
+                Zoom In
+              </button>
 
-    <button
-      onClick={() => setZoom((z) => Math.max(0.9, z - 0.2))}
-      className="px-6 py-1 mt-6 rounded-lg border"
-      style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
-    >
-      Zoom Out
-    </button>
+              <button
+                onClick={() => setZoom((z) => Math.max(0.9, z - 0.2))}
+                className="px-6 py-1 mt-6 rounded-lg border"
+                style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
+              >
+                Zoom Out
+              </button>
 
-    <button
-      onClick={() => setZoom(1)}
-      className="px-6 py-1 mt-6 rounded-lg border"
-      style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
-    >
-      Reset
-    </button>
-  </div>
+              <button
+                onClick={() => setZoom(1)}
+                className="px-6 py-1 mt-6 rounded-lg border"
+                style={{ borderColor: '#334155', color: '#e5e7eb', background: 'transparent' }}
+              >
+                Reset
+              </button>
+            </div>
             <div className="mt-4 rounded-2xl p-4 soft-card">
               <h3 className="text-lg font-semibold mb-2" style={{ color: '#e5e7eb' }}>Specifications</h3>
               <div className="grid grid-cols-2 gap-2 text-sm" style={{ color: '#cbd5e1' }}>
@@ -802,11 +822,11 @@ const mainImage = useMemo(() => {
 
 
 
-          
+
 
           {/* Product Info */}
           <div>
-            
+
             <div className="flex items-center gap-2 mb-2 text-sm" style={{ color: '#cbd5e1' }}>
 
 
@@ -816,7 +836,7 @@ const mainImage = useMemo(() => {
               {product.material && <span className="px-6 py-2 rounded-lg border" style={{ borderColor: '#334155', color: '#e5e7eb' }}>{product.material}</span>}
             </div>
 
-              
+
             <h1 className="custom-heading">
               <span>{product.name}</span>
             </h1>
@@ -831,10 +851,10 @@ const mainImage = useMemo(() => {
             </div>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <button className="p-2 rounded-lg border" style={{ borderColor: '#334155' }} onClick={()=>{ navigator.clipboard.writeText(window.location.href); toast.success('Link copied'); }} title="Copy Link">
+                <button className="p-2 rounded-lg border" style={{ borderColor: '#334155' }} onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied'); }} title="Copy Link">
                   <Copy className="w-5 h-5" color="#94a3b8" />
                 </button>
-                <button className="p-2 rounded-lg border" style={{ borderColor: '#334155' }} onClick={()=>{ if (navigator.share) { navigator.share({ title: product.name, url: window.location.href }).catch(()=>{}); } else { toast.info('Use copy to share'); } }} title="Share">
+                <button className="p-2 rounded-lg border" style={{ borderColor: '#334155' }} onClick={() => { if (navigator.share) { navigator.share({ title: product.name, url: window.location.href }).catch(() => { }); } else { toast.info('Use copy to share'); } }} title="Share">
                   <Share2 className="w-5 h-5" color="#94a3b8" />
                 </button>
               </div>
@@ -853,20 +873,19 @@ const mainImage = useMemo(() => {
               {product.description}
             </p> */}
 
-                         {/* Format (Rolled / Canvas / Frame) */}
+            {/* Format (Rolled / Canvas / Frame) */}
             <div className="mb-6">
               <h3 className="font-semibold mb-2" style={{ color: '#e5e7eb' }}>Material</h3>
               <div className="flex gap-3 rounded-lg">
-                {(['Canvas','Frame'] as const).map((fmt) => {
+                {(['Canvas', 'Frame'] as const).map((fmt) => {
                   const available = computePriceFor(selectedSize, fmt, product.subsection) !== undefined;
                   return (
                     <button
                       key={fmt}
                       onClick={() => available && setSelectedFormat(fmt)}
-                      className={`px-6 py-2 rounded-lg border-2 transition ${
-                        selectedFormat === fmt ? 'border-teal-500 bg-teal text-white'
-                          : ''
-                      } ${available ? '' : 'opacity-50 cursor-not-allowed'}`}
+                      className={`px-6 py-2 rounded-lg border-2 transition ${selectedFormat === fmt ? 'border-teal-500 bg-teal text-white'
+                        : ''
+                        } ${available ? '' : 'opacity-50 cursor-not-allowed'}`}
                       style={{ borderColor: selectedFormat === fmt ? undefined : '#334155', color: selectedFormat === fmt ? undefined : '#e5e7eb' }}
                       title={available ? '' : 'Not available for this size'}
                       disabled={!available}
@@ -906,70 +925,68 @@ const mainImage = useMemo(() => {
             )} */}
 
 
-            
 
-          {/* Sizes */}
-          {product.sizes?.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2" style={{ color: '#e5e7eb' }}>Size (in inches)</h3>
-              <div className="flex flex-wrap gap-3">
-                {product.sizes.map((size: string) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-2 rounded-lg border-2 transition ${
-                      selectedSize === size
+
+            {/* Sizes */}
+            {product.sizes?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2" style={{ color: '#e5e7eb' }}>Size (in inches)</h3>
+                <div className="flex flex-wrap gap-3">
+                  {product.sizes.map((size: string) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-6 py-2 rounded-lg border-2 transition ${selectedSize === size
                         ? 'border-teal-500 bg-teal text-white'
                         : ''
-                    }`}
-                    style={{ borderColor: selectedSize === size ? undefined : '#334155', color: selectedSize === size ? undefined : '#e5e7eb' }}
-                  >
-                    {size}
-                  </button>
-                ))}
+                        }`}
+                      style={{ borderColor: selectedSize === size ? undefined : '#334155', color: selectedSize === size ? undefined : '#e5e7eb' }}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Frame Options */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2" style={{ color: '#e5e7eb' }}>Frame</h3>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { label: 'Without Frame (Rolled)', fmt: 'Rolled' as const, color: '' },
+                  { label: 'Stretched Canvas', fmt: 'Canvas' as const, color: '' },
+                  { label: 'Black Frame', fmt: 'Frame' as const, color: 'Black' },
+                  { label: 'White Frame', fmt: 'Frame' as const, color: 'White' },
+                  { label: 'Dark Wood Frame', fmt: 'Frame' as const, color: 'Brown' },
+                ].map((opt) => {
+                  const available = computePriceFor(selectedSize, opt.fmt, product.subsection) !== undefined;
+                  const isActive =
+                    selectedFormat === opt.fmt &&
+                    (opt.fmt !== 'Frame' || selectedColor === opt.color || !opt.color);
+                  return (
+                    <button
+                      key={opt.label}
+                      onClick={() => {
+                        if (!available) return;
+                        setSelectedFormat(opt.fmt);
+                        if (opt.fmt === 'Frame') {
+                          setSelectedColor(opt.color);
+                        } else {
+                          setSelectedColor('');
+                        }
+                      }}
+                      className={`px-6 py-2 rounded-lg border-2 transition ${isActive ? 'border-teal-500 bg-teal text-white' : ''
+                        } ${available ? '' : 'opacity-50 cursor-not-allowed'}`}
+                      style={{ borderColor: isActive ? undefined : '#334155', color: isActive ? undefined : '#e5e7eb' }}
+                      disabled={!available}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-
-          {/* Frame Options */}
-          <div className="mb-6">
-            <h3 className="font-semibold mb-2" style={{ color: '#e5e7eb' }}>Frame</h3>
-            <div className="flex flex-wrap gap-3">
-              {[
-                { label: 'Without Frame (Rolled)', fmt: 'Rolled' as const, color: '' },
-                { label: 'Stretched Canvas', fmt: 'Canvas' as const, color: '' },
-                { label: 'Black Frame', fmt: 'Frame' as const, color: 'Black' },
-                { label: 'White Frame', fmt: 'Frame' as const, color: 'White' },
-                { label: 'Dark Wood Frame', fmt: 'Frame' as const, color: 'Brown' },
-              ].map((opt) => {
-                const available = computePriceFor(selectedSize, opt.fmt, product.subsection) !== undefined;
-                const isActive =
-                  selectedFormat === opt.fmt &&
-                  (opt.fmt !== 'Frame' || selectedColor === opt.color || !opt.color);
-                return (
-                  <button
-                    key={opt.label}
-                    onClick={() => {
-                      if (!available) return;
-                      setSelectedFormat(opt.fmt);
-                      if (opt.fmt === 'Frame') {
-                        setSelectedColor(opt.color);
-                      } else {
-                        setSelectedColor('');
-                      }
-                    }}
-                    className={`px-6 py-2 rounded-lg border-2 transition ${
-                      isActive ? 'border-teal-500 bg-teal text-white' : ''
-                    } ${available ? '' : 'opacity-50 cursor-not-allowed'}`}
-                    style={{ borderColor: isActive ? undefined : '#334155', color: isActive ? undefined : '#e5e7eb' }}
-                    disabled={!available}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
             {/* Quantity */}
             <div className="mb-8">
@@ -994,43 +1011,43 @@ const mainImage = useMemo(() => {
             </div>
 
             {/* Buttons */}
-           <div className="flex gap-4 mb-8">
+            <div className="flex gap-4 mb-8">
 
-  {/* Add to Cart */}
-  <button
-    onClick={handleAddToCart}
-    className="flex-1 px-10 py-3 rounded-xl transition-all duration-200 tracking-widest"
-    style={{ border: '1px solid #e5e7eb', backgroundColor: 'transparent', color: '#e5e7eb', fontWeight: 700 }}
-  >
-    <div className="flex gap-2 items-center justify-center">
-      <ShoppingCart className="w-5 h-5" color="#e5e7eb" />
-      ADD TO CART
-    </div>
-  </button>
+              {/* Add to Cart */}
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 px-10 py-3 rounded-xl transition-all duration-200 tracking-widest"
+                style={{ border: '1px solid #e5e7eb', backgroundColor: 'transparent', color: '#e5e7eb', fontWeight: 700 }}
+              >
+                <div className="flex gap-2 items-center justify-center">
+                  <ShoppingCart className="w-5 h-5" color="#e5e7eb" />
+                  ADD TO CART
+                </div>
+              </button>
 
-  {/* Buy Now */}
-  <button
-    onClick={handleBuyNow}
-    className="flex-1 px-10 py-3 rounded-xl text-black font-semibold transition-all duration-200 tracking-widest"
-    style={{ backgroundColor: '#14b8a6', color: '#0b1220', fontWeight: 700 }}
-  >
-    BUY NOW
-  </button>
+              {/* Buy Now */}
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 px-10 py-3 rounded-xl text-black font-semibold transition-all duration-200 tracking-widest"
+                style={{ backgroundColor: '#14b8a6', color: '#0b1220', fontWeight: 700 }}
+              >
+                BUY NOW
+              </button>
 
-  {/* Wishlist */}
-  <button
-    onClick={handleAddToWishlist}
-    className="
+              {/* Wishlist */}
+              <button
+                onClick={handleAddToWishlist}
+                className="
       w-12 h-12 rounded-xl border-2 
       flex items-center justify-center
       border-gray-300 hover:border-teal-500
       hover:bg-teal-50 transition-all duration-200
     "
-  >
-    <Heart className="w-5 h-5 hover:text-teal-600" color="#94a3b8" />
-  </button>
+              >
+                <Heart className="w-5 h-5 hover:text-teal-600" color="#94a3b8" />
+              </button>
 
-</div>
+            </div>
 
 
             <div className="mt-6 rounded-2xl bg-white border border-gray-200 shadow-sm p-6 space-y-6">
@@ -1142,25 +1159,25 @@ const mainImage = useMemo(() => {
           </div>
 
         </div>
-  
+
         {/* Related Products */}
-{relatedProducts.length > 0 && (
-  <div className="mt-20">
-    <h2 className="custom-heading font-bold text-center mb-12">
-      Related <span style={{ color: "#14b8a6" }}>Frames</span>
-    </h2>
+        {relatedProducts.length > 0 && (
+          <div className="mt-20">
+            <h2 className="custom-heading font-bold text-center mb-12">
+              Related <span style={{ color: "#14b8a6" }}>Frames</span>
+            </h2>
 
 
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {relatedProducts.map((product) => (
-        <LazyShow key={product.id}>
-          <ProductCard product={product} />
-        </LazyShow>
-      ))}
-    </div>
-  </div>
-  
-)}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((product) => (
+                <LazyShow key={product.id}>
+                  <ProductCard product={product} />
+                </LazyShow>
+              ))}
+            </div>
+          </div>
+
+        )}
 
 
       </div>

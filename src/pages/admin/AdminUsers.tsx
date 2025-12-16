@@ -99,7 +99,7 @@ export default function AdminUsers() {
                     className="border-b hover:bg-gray-50 transition"
                   >
                     <td className="py-4 flex items-center gap-3 text-gray-900">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-teal-100 text-[#14b8a6] flex items-center justify-center">
                         <User className="w-5 h-5" />
                       </div>
                       {user.name || "Unnamed User"}

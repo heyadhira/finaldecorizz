@@ -136,7 +136,7 @@ export default function AdminPayments() {
                   <p className="text-gray-500 text-sm">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">₹{totalAmount.toFixed(2)}</p>
                 </div>
-                <IndianRupee className="w-12 h-12 text-blue-600" />
+                <IndianRupee className="w-12 h-12 text-[#14b8a6]" />
               </div>
             </div>
 

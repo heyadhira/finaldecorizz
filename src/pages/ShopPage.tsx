@@ -237,7 +237,7 @@ export default function ShopPage() {
     if (category) {
       setFilters(prev => ({ ...prev, categories: [category] }));
     }
-  }, []);
+  }, [searchParams]);
 
 
   const fetchProducts = async () => {
@@ -313,112 +313,112 @@ export default function ShopPage() {
     });
   };
 
-  const activeFilterCount = 
-    filters.rooms.length + 
-    filters.layouts.length + 
-    filters.sizes.length + 
-    filters.colors.length + 
-    filters.materials.length + 
+  const activeFilterCount =
+    filters.rooms.length +
+    filters.layouts.length +
+    filters.sizes.length +
+    filters.colors.length +
+    filters.materials.length +
     filters.categories.length;
 
 
 
-const filteredProducts = useMemo(() => {
-  // 🔹 Start from shuffled list instead of original
-  let result = [...shuffledProducts];
+  const filteredProducts = useMemo(() => {
+    // 🔹 Start from shuffled list instead of original
+    let result = [...shuffledProducts];
 
-  if (filters.rooms.length > 0) {
-    result = result.filter(p => filters.rooms.includes(p.roomCategory || p.room || ''));
-  }
+    if (filters.rooms.length > 0) {
+      result = result.filter(p => filters.rooms.includes(p.roomCategory || p.room || ''));
+    }
 
-  if (filters.layouts.length > 0) {
-    result = result.filter(p => filters.layouts.includes(p.layout || ''));
-  }
+    if (filters.layouts.length > 0) {
+      result = result.filter(p => filters.layouts.includes(p.layout || ''));
+    }
 
-  if (filters.sizes.length > 0) {
-    result = result.filter(p => {
-      if (Array.isArray(p.sizes)) return p.sizes.some(s => filters.sizes.includes(s));
-      return filters.sizes.includes(p.size || '');
-    });
-  }
-
-  if (filters.colors.length > 0) {
-    result = result.filter(p => p.colors?.some(c => filters.colors.includes(c)));
-  }
-
-  if (filters.materials.length > 0) {
-    result = result.filter(p => filters.materials.includes(p.material || ''));
-  }
-
-  if (filters.categories.length > 0) {
-    result = result.filter(p => filters.categories.includes(p.category || ''));
-  }
-
-  result = result.filter(p => p.price >= filters.priceMin && p.price <= filters.priceMax);
-
-  switch (filters.sortBy) {
-    case 'price-low':
-      result.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-high':
-      result.sort((a, b) => b.price - a.price);
-      break;
-    case 'newest':
-      result.sort(
-        (a, b) =>
-          new Date(b.createdAt || '').getTime() -
-          new Date(a.createdAt || '').getTime()
-      );
-      break;
-    // 'popular' → keep shuffled order
-  }
-
-  return result;
-}, [shuffledProducts, filters]);
-
-
-
-
-const finalFilteredProducts = useMemo(() => {
-  return filteredProducts.filter(p => {
-    const matchFormat =
-      formatSubsection === "All" ? true : p.format === formatSubsection;
-
-    const matchSubsection =
-      subsectionChip === "All" ? true : p.subsection === subsectionChip;
-
-    return matchFormat && matchSubsection;
-  });
-}, [filteredProducts, formatSubsection, subsectionChip]);
-
-const totalPages = useMemo(() => {
-  return Math.max(1, Math.ceil(finalFilteredProducts.length / PAGE_SIZE));
-}, [finalFilteredProducts]);
-
-const paginatedProducts = useMemo(() => {
-  return finalFilteredProducts.slice(0, currentPage * PAGE_SIZE);
-}, [finalFilteredProducts, currentPage]);
-
-useEffect(() => {
-  const el = sentinelRef.current;
-  if (!el) return;
-  const observer = new IntersectionObserver((entries) => {
-    const entry = entries[0];
-    if (entry.isIntersecting) {
-      setCurrentPage((p) => {
-        const next = p + 1;
-        const maxPages = Math.max(1, Math.ceil(finalFilteredProducts.length / PAGE_SIZE));
-        return next <= maxPages ? next : p;
+    if (filters.sizes.length > 0) {
+      result = result.filter(p => {
+        if (Array.isArray(p.sizes)) return p.sizes.some(s => filters.sizes.includes(s));
+        return filters.sizes.includes(p.size || '');
       });
     }
-  }, { root: null, rootMargin: '200px', threshold: 0.01 });
-  observer.observe(el);
-  return () => observer.disconnect();
-}, [finalFilteredProducts.length, PAGE_SIZE]);
 
-useEffect(() => {
-  setCurrentPage(1);
-}, [filters, formatSubsection, subsectionChip]);
+    if (filters.colors.length > 0) {
+      result = result.filter(p => p.colors?.some(c => filters.colors.includes(c)));
+    }
+
+    if (filters.materials.length > 0) {
+      result = result.filter(p => filters.materials.includes(p.material || ''));
+    }
+
+    if (filters.categories.length > 0) {
+      result = result.filter(p => filters.categories.includes(p.category || ''));
+    }
+
+    result = result.filter(p => p.price >= filters.priceMin && p.price <= filters.priceMax);
+
+    switch (filters.sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt || '').getTime() -
+            new Date(a.createdAt || '').getTime()
+        );
+        break;
+      // 'popular' → keep shuffled order
+    }
+
+    return result;
+  }, [shuffledProducts, filters]);
+
+
+
+
+  const finalFilteredProducts = useMemo(() => {
+    return filteredProducts.filter(p => {
+      const matchFormat =
+        formatSubsection === "All" ? true : p.format === formatSubsection;
+
+      const matchSubsection =
+        subsectionChip === "All" ? true : p.subsection === subsectionChip;
+
+      return matchFormat && matchSubsection;
+    });
+  }, [filteredProducts, formatSubsection, subsectionChip]);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(finalFilteredProducts.length / PAGE_SIZE));
+  }, [finalFilteredProducts]);
+
+  const paginatedProducts = useMemo(() => {
+    return finalFilteredProducts.slice(0, currentPage * PAGE_SIZE);
+  }, [finalFilteredProducts, currentPage]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) {
+        setCurrentPage((p) => {
+          const next = p + 1;
+          const maxPages = Math.max(1, Math.ceil(finalFilteredProducts.length / PAGE_SIZE));
+          return next <= maxPages ? next : p;
+        });
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0.01 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [finalFilteredProducts.length, PAGE_SIZE]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, formatSubsection, subsectionChip]);
 
 
   return (
@@ -427,35 +427,34 @@ useEffect(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-       {/* HERO HEADER */}
-<section className=" mx-auto sm:px-6 mb-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="soft-card p-8 sm:p-12 card-appear">
-            <h1 className="text-center custom-heading">
-              Shop <span style={{ color: "#14b8a6" }}>All Frames</span>
-            </h1>
-            <p className="text-center max-w-3xl mx-auto italic text-base sm:text-lg" style={{ color: "#cbd5e1" }}>
-              Curated frames to elevate every room with style and functionality.
-            </p>
+        {/* HERO HEADER */}
+        <section className=" mx-auto sm:px-6 mb-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="soft-card p-8 sm:p-12 card-appear">
+              <h1 className="text-center custom-heading">
+                Shop <span style={{ color: "#14b8a6" }}>All Frames</span>
+              </h1>
+              <p className="text-center max-w-3xl mx-auto italic text-base sm:text-lg" style={{ color: "#cbd5e1" }}>
+                Curated frames to elevate every room with style and functionality.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
         <div className="flex gap-8 items-start">
           {/* Filters Sidebar */}
           <div
-            className={`${
-              showFilters ? 'block' : 'hidden'
-            } lg:block lg:static lg:w-64 lg:flex-shrink-0 lg:order-2 lg:z-auto`}
+            className={`${showFilters ? 'block' : 'hidden'
+              } lg:block lg:static lg:w-64 lg:flex-shrink-0 lg:order-2 lg:z-auto`}
           >
             {/* Mobile Overlay */}
-            <div 
+            <div
               className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
               onClick={() => setShowFilters(false)}
             ></div>
 
             {/* Filter Panel */}
-              <div className="lg:w-64 rounded-3xl shadow-2xl lg:shadow-sm fixed lg:static left-0 right-0 top-0 bottom-0 lg:inset-auto overflow-y-auto lg:max-h-[calc(100vh-8rem)] flex flex-col touch-pan-y mobile-filter-panel z-40"
+            <div className="lg:w-64 rounded-3xl shadow-2xl lg:shadow-sm fixed lg:static left-0 right-0 top-0 bottom-0 lg:inset-auto overflow-y-auto lg:max-h-[calc(100vh-8rem)] flex flex-col touch-pan-y mobile-filter-panel z-40"
               style={{ overscrollBehavior: 'contain', backgroundColor: '#0f172a', border: '1px solid #334155', paddingBottom: 'env(safe-area-inset-bottom)' }}
             >
               {/* Header */}
@@ -480,127 +479,127 @@ useEffect(() => {
                   <X className="w-6 h-6" />
                 </button>
 
-                
+
               </div>
 
               {/* Scrollable Content */}
               <div className="overflow-y-auto flex-1 p-6 custom-scrollbar">
 
-              {/* Category Filter */}
-              <div className="mb-6 pb-6 border-b" style={{ borderColor: '#334155' }}>
-                <button
-                  onClick={() => toggleSection('categories')}
-                  className="flex items-center justify-between w-full mb-3 transition"
-                  style={{ fontWeight: 700, color: '#e5e7eb' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#14b8a6'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#e5e7eb'}
-                >
-                  <h3>Categories</h3>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${expandedSections.categories ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {expandedSections.categories && (
-                  <div className="space-y-2">
-                    {categoryNames.map(name => (
-                      <label key={name} className="flex items-center justify-between cursor-pointer group">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={filters.categories.includes(name)}
-                            onChange={() => toggleFilter('categories', name)}
-                            className="mr-2"
-                            style={{ accentColor: '#14b8a6' }}
-                          />
-                          <span className="text-sm transition" style={{ color: '#cbd5e1' }}>
-                            {name}
-                          </span>
-                        </div>
-                        <span className="text-xs" style={{ color: '#94a3b8' }}>({categoryCounts[name] || 0})</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Layout Filter */}
-              <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
-                <button
-                  onClick={() => toggleSection('layout')}
-                  className="flex items-center justify-between w-full mb-3 transition"
-                  style={{ fontWeight: 700, color: '#1f2937' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'bg-teal'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
-                >
-                  <h3>Layout</h3>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${expandedSections.layout ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {expandedSections.layout && (
-                  <div className="flex flex-wrap gap-2">
-                    {LAYOUT_OPTIONS.map(layout => (
-                      <button
-                        key={layout}
-                        onClick={() => toggleFilter('layouts', layout)}
-                        className="px-4 py-2 rounded-lg border-2 text-sm transition-all transform active:scale-95"
-                        style={{
-                          backgroundColor: filters.layouts.includes(layout) ? '#14b8a6' : 'white',
-                          color: filters.layouts.includes(layout) ? 'white' : '#374151',
-                          borderColor: filters.layouts.includes(layout) ? '#14b8a6' : '#d1d5db',
-                          fontWeight: 600
-                        }}
-                      >
-                        {layout}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Room Filter */}
-              <div className="mb-6 pb-6 border-b" style={{ borderColor: '#334155' }}>
-                <button
-                  onClick={() => toggleSection('room')}
-                  className="flex items-center justify-between w-full mb-3 transition"
-                  style={{ fontWeight: 700, color: '#e5e7eb' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#14b8a6'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#e5e7eb'}
-                >
-                  <h3>Decor by Room</h3>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${expandedSections.room ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {expandedSections.room && (
-                  <div className="space-y-2">
-                    {ROOM_OPTIONS.map(room => {
-                      const count = roomCounts[room.name] || 0;
-                      return (
-                        <label key={room.name} className="flex items-center cursor-pointer group py-2 px-3 rounded-lg transition">
-                          <input
-                            type="checkbox"
-                            checked={filters.rooms.includes(room.name)}
-                            onChange={() => toggleFilter('rooms', room.name)}
-                            className="mr-3 w-5 h-5"
-                            style={{ accentColor: '#14b8a6' }}
-                          />
-                          <span className="text-sm transition flex-1" style={{ color: '#cbd5e1' }}>
-                            {room.name}
-                          </span>
-                          <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ color: '#94a3b8', backgroundColor: '#0b1220', border: '1px solid #334155' }}>
-                            {count}
-                          </span>
+                {/* Category Filter */}
+                <div className="mb-6 pb-6 border-b" style={{ borderColor: '#334155' }}>
+                  <button
+                    onClick={() => toggleSection('categories')}
+                    className="flex items-center justify-between w-full mb-3 transition"
+                    style={{ fontWeight: 700, color: '#e5e7eb' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#14b8a6'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#e5e7eb'}
+                  >
+                    <h3>Categories</h3>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${expandedSections.categories ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {expandedSections.categories && (
+                    <div className="space-y-2">
+                      {categoryNames.map(name => (
+                        <label key={name} className="flex items-center justify-between cursor-pointer group">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={filters.categories.includes(name)}
+                              onChange={() => toggleFilter('categories', name)}
+                              className="mr-2"
+                              style={{ accentColor: '#14b8a6' }}
+                            />
+                            <span className="text-sm transition" style={{ color: '#cbd5e1' }}>
+                              {name}
+                            </span>
+                          </div>
+                          <span className="text-xs" style={{ color: '#94a3b8' }}>({categoryCounts[name] || 0})</span>
                         </label>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-              
-              {/* Size Filter */}
-              {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
+                {/* Layout Filter */}
+                <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
+                  <button
+                    onClick={() => toggleSection('layout')}
+                    className="flex items-center justify-between w-full mb-3 transition"
+                    style={{ fontWeight: 700, color: '#1f2937' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'bg-teal'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
+                  >
+                    <h3>Layout</h3>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${expandedSections.layout ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {expandedSections.layout && (
+                    <div className="flex flex-wrap gap-2">
+                      {LAYOUT_OPTIONS.map(layout => (
+                        <button
+                          key={layout}
+                          onClick={() => toggleFilter('layouts', layout)}
+                          className="px-4 py-2 rounded-lg border-2 text-sm transition-all transform active:scale-95"
+                          style={{
+                            backgroundColor: filters.layouts.includes(layout) ? '#14b8a6' : 'white',
+                            color: filters.layouts.includes(layout) ? 'white' : '#374151',
+                            borderColor: filters.layouts.includes(layout) ? '#14b8a6' : '#d1d5db',
+                            fontWeight: 600
+                          }}
+                        >
+                          {layout}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Room Filter */}
+                <div className="mb-6 pb-6 border-b" style={{ borderColor: '#334155' }}>
+                  <button
+                    onClick={() => toggleSection('room')}
+                    className="flex items-center justify-between w-full mb-3 transition"
+                    style={{ fontWeight: 700, color: '#e5e7eb' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#14b8a6'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#e5e7eb'}
+                  >
+                    <h3>Decor by Room</h3>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${expandedSections.room ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {expandedSections.room && (
+                    <div className="space-y-2">
+                      {ROOM_OPTIONS.map(room => {
+                        const count = roomCounts[room.name] || 0;
+                        return (
+                          <label key={room.name} className="flex items-center cursor-pointer group py-2 px-3 rounded-lg transition">
+                            <input
+                              type="checkbox"
+                              checked={filters.rooms.includes(room.name)}
+                              onChange={() => toggleFilter('rooms', room.name)}
+                              className="mr-3 w-5 h-5"
+                              style={{ accentColor: '#14b8a6' }}
+                            />
+                            <span className="text-sm transition flex-1" style={{ color: '#cbd5e1' }}>
+                              {room.name}
+                            </span>
+                            <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ color: '#94a3b8', backgroundColor: '#0b1220', border: '1px solid #334155' }}>
+                              {count}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+
+                {/* Size Filter */}
+                {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => toggleSection('size')}
                   className="flex items-center justify-between w-full mb-3 transition"
@@ -634,8 +633,8 @@ useEffect(() => {
                 )}
               </div> */}
 
-              {/* Color Filter */}
-              {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
+                {/* Color Filter */}
+                {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => toggleSection('colors')}
                   className="flex items-center justify-between w-full mb-3 transition"
@@ -669,8 +668,8 @@ useEffect(() => {
                 )}
               </div> */}
 
-              {/* Material Filter */}
-              {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
+                {/* Material Filter */}
+                {/* <div className="mb-6 pb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
                 <button
                   onClick={() => toggleSection('materials')}
                   className="flex items-center justify-between w-full mb-3 transition"
@@ -703,47 +702,47 @@ useEffect(() => {
                 )}
               </div> */}
 
-              
 
-              {/* Price Range */}
-              <div className="mb-6">
-                <h3 className="mb-3" style={{ fontWeight: 700, color: '#e5e7eb' }}>
-                  Price Range
-                </h3>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="10000"
-                    value={filters.priceMax}
-                    onChange={(e) =>
-                      setFilters(prev => ({ ...prev, priceMax: Number(e.target.value) }))
-                    }
-                    className="w-full"
-                    style={{ accentColor: '#14b8a6' }}
-                  />
-                  <div className="flex items-center justify-between text-sm">
-                    <span style={{ color: '#cbd5e1' }}>₹{filters.priceMin}</span>
-                    <span style={{ color: '#cbd5e1' }}>₹{filters.priceMax}</span>
+
+                {/* Price Range */}
+                <div className="mb-6">
+                  <h3 className="mb-3" style={{ fontWeight: 700, color: '#e5e7eb' }}>
+                    Price Range
+                  </h3>
+                  <div className="space-y-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      value={filters.priceMax}
+                      onChange={(e) =>
+                        setFilters(prev => ({ ...prev, priceMax: Number(e.target.value) }))
+                      }
+                      className="w-full"
+                      style={{ accentColor: '#14b8a6' }}
+                    />
+                    <div className="flex items-center justify-between text-sm">
+                      <span style={{ color: '#cbd5e1' }}>₹{filters.priceMin}</span>
+                      <span style={{ color: '#cbd5e1' }}>₹{filters.priceMax}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="w-full py-3 rounded-lg transition font-semibold"
-                  style={{ backgroundColor: '#111827', color: '#e5e7eb', border: '1px solid #334155' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1f2937';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#111827';
-                  }}
-                >
-                  Clear All Filters
-                </button>
-              )}
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="w-full py-3 rounded-lg transition font-semibold"
+                    style={{ backgroundColor: '#111827', color: '#e5e7eb', border: '1px solid #334155' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1f2937';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#111827';
+                    }}
+                  >
+                    Clear All Filters
+                  </button>
+                )}
               </div>
 
               {/* Mobile Action Buttons */}
@@ -762,7 +761,7 @@ useEffect(() => {
                 >
                   Show {filteredProducts.length} Products
                 </button>
-                
+
               </div>
             </div>
           </div>
@@ -770,34 +769,34 @@ useEffect(() => {
           {/* Products Grid */}
           <div className="flex-1 w-full lg:order-1 min-w-0">
             {/* Sort */}
-<div className="flex items-center justify-between mb-6 
+            <div className="flex items-center justify-between mb-6 
                 max-sm:flex-col max-sm:items-start max-sm:gap-3">
 
-  <p style={{ fontWeight: 500, color: '#cbd5e1' }}>
-    <span style={{ color: '#14b8a6', fontWeight: 700 }}>
-      {filteredProducts.length}
-    </span> 
-    {" "}products found
-  </p>
+              <p style={{ fontWeight: 500, color: '#cbd5e1' }}>
+                <span style={{ color: '#14b8a6', fontWeight: 700 }}>
+                  {filteredProducts.length}
+                </span>
+                {" "}products found
+              </p>
 
-<SortDropdown
-  value={filters.sortBy}
-  onChange={(val) => setFilters(prev => ({ ...prev, sortBy: val }))}
- />
+              <SortDropdown
+                value={filters.sortBy}
+                onChange={(val) => setFilters(prev => ({ ...prev, sortBy: val }))}
+              />
 
- {/* Mobile Filter Trigger (top) */}
- <button
-   onClick={() => setShowFilters(true)}
-   className="md:hidden p-2 rounded-lg border ml-3 flex items-center gap-2"
-   style={{ borderColor: '#334155', backgroundColor: '#0f172a', color: '#e5e7eb' }}
- >
-   <Filter className="w-4 h-4" />
-   <span className="text-sm">Filters</span>
- </button>
-</div>
+              {/* Mobile Filter Trigger (top) */}
+              <button
+                onClick={() => setShowFilters(true)}
+                className="md:hidden p-2 rounded-lg border ml-3 flex items-center gap-2"
+                style={{ borderColor: '#334155', backgroundColor: '#0f172a', color: '#e5e7eb' }}
+              >
+                <Filter className="w-4 h-4" />
+                <span className="text-sm">Filters</span>
+              </button>
+            </div>
             {/* Subsection Chips */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {(['All','2-Set','3-Set','Square'] as const).map(opt => (
+              {(['All', '2-Set', '3-Set', 'Square'] as const).map(opt => (
                 <button
                   key={opt}
                   onClick={() => setSubsectionChip(opt)}
@@ -816,7 +815,7 @@ useEffect(() => {
 
             {/* Format Chips */}
             <div className="flex flex-wrap gap-3 mb-6">
-              {(['All','Rolled','Canvas','Frame'] as const).map(opt => (
+              {(['All', 'Rolled', 'Canvas', 'Frame'] as const).map(opt => (
                 <button
                   key={opt}
                   onClick={() => setFormatSubsection(opt)}
@@ -841,38 +840,38 @@ useEffect(() => {
               </div>
             ) : filteredProducts.length > 0 ? (
               <>
-              
-<div className="w-full overflow-hidden pb-6">
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 w-full items-stretch">
-    {paginatedProducts.map(product => {
-      const chosenSize = filters.sizes[0] || "";
-      const effectiveSub =
-        subsectionChip === "All" ? product.subsection || "Basic" : subsectionChip;
 
-      const overridePrice =
-        formatSubsection !== "All" && chosenSize
-          ? computePriceFor(
-              chosenSize,
-              formatSubsection,
-              effectiveSub
-            )
-          : undefined;
+                <div className="w-full overflow-hidden pb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 w-full items-stretch">
+                    {paginatedProducts.map(product => {
+                      const chosenSize = filters.sizes[0] || "";
+                      const effectiveSub =
+                        subsectionChip === "All" ? product.subsection || "Basic" : subsectionChip;
 
-      return (
-        <div key={product.id} className="w-full h-full">
-          <ProductCard
-            product={product}
-            overridePrice={overridePrice}
-            eyeNavigates
-          />
-        </div>
-      );
-    })}
-  </div>
-</div>
+                      const overridePrice =
+                        formatSubsection !== "All" && chosenSize
+                          ? computePriceFor(
+                            chosenSize,
+                            formatSubsection,
+                            effectiveSub
+                          )
+                          : undefined;
 
-{/* Infinite Scroll Sentinel */}
-<div ref={sentinelRef} style={{ height: '1px' }} />
+                      return (
+                        <div key={product.id} className="w-full h-full">
+                          <ProductCard
+                            product={product}
+                            overridePrice={overridePrice}
+                            eyeNavigates
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Infinite Scroll Sentinel */}
+                <div ref={sentinelRef} style={{ height: '1px' }} />
 
               </>
             ) : (

@@ -209,6 +209,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/product/:category/:name" element={<ProductDetailPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
             {/* Protect checkout: redirect unauthenticated users to login with a return path */}
