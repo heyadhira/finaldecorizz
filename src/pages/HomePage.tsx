@@ -9,6 +9,7 @@ import { useRef } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+import viratImage from "../assets/virat.jpg";
 import owl from "../assets/owl.jpg";
 import batman from "../assets/batman.png";
 import monkey from "../assets/monkey.png";
@@ -299,7 +300,7 @@ export default function HomePage() {
         <div className="deco-circle deco-circle-brown float-element" style={{ width: '150px', height: '150px', bottom: '-30px', left: '-30px' }} aria-hidden="true" />
 
         <div className="text-center mb-8 fade-up">
-          <h2 className="custom-heading section-header-glow ml-6 pb-2 border-b-2 border-[#14b8a6] inline-block">
+          <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-[#14b8a6] mt-6 inline-block">
             <span className="text-[#3b2f27]">Explore</span>
             <span style={{ color: "#14b8a6" }}> Frames</span>
           </h2>
@@ -394,9 +395,73 @@ export default function HomePage() {
         )}
       </section>
 
+
+      <section
+        className="relative py-14 md:py-20 lg:py-24 bg-cover bg-center bg-no-repeat cover-fit"
+        style={{
+          backgroundImage: `url(${viratImage})`,
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #0f172a91 0%",
+            backdropFilter: "blur(2px)",
+          }}
+        ></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 grid lg:grid-cols-2 gap-10 md:gap-14 items-center z-[5]">
+          <div className="fade-left space-y-6 text-white">
+            <div className="flex gap-3 opacity-70">
+              <div className="w-8 h-8 md:w-10 md:h-10 border-2 rounded float-box border-white/60"></div>
+              <div className="w-8 h-8 md:w-10 md:h-10 border-2 rounded float-box border-white/60"></div>
+            </div>
+
+            <div className="space-y-1 md:space-y-3">
+              <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+                Wall
+              </h2>
+
+              <h1 className="font-serif font-extrabold italic text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
+                Art
+              </h1>
+
+              <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+                Collection
+              </h2>
+            </div>
+
+            <p className="text-sm sm:text-base md:text-lg max-w-sm">
+              <span className="text-gray-900 font-extrabold"> Discover our curated collection of premium wall décor frames—from elegant
+                minimalist pieces to luxurious handcrafted artwork.</span>
+            </p>
+
+            <Link
+              to="/shop"
+              className="premium-btn-white rounded-xl inline-block text-sm md:text-base px-6 py-3"
+            >
+              Explore Collection
+            </Link>
+
+
+          </div>
+
+          <div className="fade-right relative pb-6 pt-6">
+            <div className="curved-image-card">
+              <img
+                src={viratImage}
+                className="w-full h-auto object-cover rounded-xl"
+                alt="Decor"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+
       <section className="w-full mx-auto px-4 py-12 lg:py-20 relative overflow-hidden bg-white">
         <div className="text-center mb-12">
-          <h2 className="custom-heading mb-4 pb-2 border-b-2 border-[#14b8a6] inline-block">
+          <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-[#14b8a6] mt-6 inline-block">
             <span className="text-[#3b2f27]">Watch</span>
             <span style={{ color: "#14b8a6" }}> & Buy</span>
           </h2>
@@ -491,11 +556,11 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4">
           <div className="mb-12 text-center">
-            <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-b-2 border-[#14b8a6] mt-6 inline-block">
+            <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-[#14b8a6] mt-6 inline-block">
               <span className="text-[#3b2f27]">Why</span>
               <span style={{ color: "#14b8a6" }}> Choose Us</span>
             </h2>
-            <p className="ml-6 max-w-2xl mx-auto text-center" style={{ color: "#cbd5e1" }}>
+            <p className="ml-6" style={{ color: "#cbd5e1" }}>
               Your confidence in our products is paramount. We stand behind every
               piece with unwavering guarantee and dedication.
             </p>
@@ -567,9 +632,9 @@ export default function HomePage() {
 
       <section className="best-section max-w-7xl mx-auto px-4 py-16 lg:py-20 relative overflow-hidden">
         <div className="text-center mb-10 ml-6">
-          <h2 className="custom-heading mb-4 pb-2 border-b-2 border-[#14b8a6] mt-6 inline-block">
+          <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-[#14b8a6] mt-6 inline-block">
             <span className="text-[#3b2f27]">Latest</span>
-            <span className="text-[#14b8a6]"> Upload Products Here</span>
+            <span style={{ color: "#14b8a6" }}> fresh arrivals</span>
           </h2>
 
           <p className="mt-3 mb-6 text-gray-500">
@@ -671,8 +736,8 @@ export default function HomePage() {
 
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center">
-              <h2 className="custom-heading section-header-glow" style={{ fontWeight: 700 }}>
-                What <span className="text-primary">People </span>Say <span className="text-primary">About </span>Us
+              <h2 className="section-title section-header-glow font-extrabold mb-4 ml-6 pb-2 border-[#14b8a6] mt-6 inline-block">
+                What <span style={{ color: "#14b8a6" }}>People Say</span>
               </h2>
               <div className="flex items-center justify-center gap-3 mb-3" aria-hidden="true">
                 <span className="w-2 h-2 rounded-full" style={{ background: '#14b8a6' }} />
@@ -767,7 +832,7 @@ export default function HomePage() {
         <section className="faq-dark mb-12" aria-label="Frequently Asked Questions">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="custom-heading section-header-glow text-center mb-8">
-              <span style={{ color: '#14b8a6' }}>Frequently Asked</span> Questions
+              Frequently <span style={{ color: '#14b8a6' }}> Asked Questions</span>
             </h2>
             <div className="faq-list" role="list">
               {faqs.map((f) => {
