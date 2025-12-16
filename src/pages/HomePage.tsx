@@ -117,7 +117,7 @@ export default function HomePage() {
 
       // Products
       const productsData = await productsRes.json();
-      setFeaturedProducts(productsData.products?.slice(0, 8) || []);
+      setFeaturedProducts(productsData.products?.slice(0, 20) || []);
       const allProducts: Product[] = productsData.products || [];
       const sortedNew = [...allProducts].sort((a: any, b: any) => {
         const ta = a.createdAt || a.created_at ? new Date(a.createdAt || a.created_at).getTime() : 0;
@@ -136,7 +136,7 @@ export default function HomePage() {
 
       // Videos
       const videosData = await videosRes.json();
-      setWatchVideos((videosData.videos || []).slice(0, 5));
+      setWatchVideos((videosData.videos || []).slice(0, 10));
 
       // FAQs
       const faqsData = await faqsRes.json();
@@ -362,7 +362,7 @@ export default function HomePage() {
                         key={p.id || idx}
                         className="best-carousel-item basis-full sm:basis-1/2 lg:basis-1/3 flex justify-center"
                       >
-                        <Link to={`/product/${p.id}`} className={`best-item card-hover-glow ${positionClass}`}>
+                        <Link to={`/product/${p.id}`} className={`best-item ${positionClass}`}>
                           <article className="best-card cursor-pointer"
                             style={{ aspectRatio: isCenter ? "4 / 5" : "4 / 4" }}
                           >
@@ -404,66 +404,62 @@ export default function HomePage() {
         </div>
 
         {watchVideos.length > 0 ? (
-          <div className="relative mb-12 max-w-7xl mx-auto px-2 sm:px-0">
+          <div className="relative mb-12 max-w-7xl mx-auto">
             <Carousel
-              plugins={watchPlugins}
-              opts={{
-                loop: true,
-                align: "center",
-                slidesToScroll: 1,
-              }}
+              opts={{ loop: true, align: "center", slidesToScroll: 1 }}
               setApi={setWatchApi}
-              className="w-full"
+              className="w-full overflow-hidden"
             >
-              <CarouselContent className="-ml-2 sm:-ml-4">
+              <CarouselContent className="gap-6">
                 {watchVideos.map((v) => {
                   const isYouTube = /youtube\.com|youtu\.be/.test(v.url || '');
                   const ytIdMatch = v.url?.match(/v=([^&]+)/) || v.url?.match(/youtu\.be\/([^?]+)/) || v.url?.match(/embed\/([^?]+)/);
                   const ytId = ytIdMatch ? ytIdMatch[1] : '';
                   return (
-                    <CarouselItem key={v.id} className="pl-2 sm:pl-4 basis-full sm:basis-1/2 lg:basis-1/4 p-4">
-                      <Link to="/shop-by-videos" className="relative block rounded-xl overflow-hidden group soft-card bg-white border aspect-video">
-                        {isYouTube && ytId ? (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1`}
-                            className="w-full h-full object-cover pointer-events-none"
-                            allow="autoplay; encrypted-media"
-                            allowFullScreen
-                            title={v.title}
-                          />
-                        ) : (
-                          <video
-                            src={v.url}
-                            className="w-full h-full object-cover"
-                            autoPlay
-                            muted
-                            loop
-                            playsInline
-                          />
-                        )}
+                    <CarouselItem key={v.id} className="best-carousel-item basis-full sm:basis-1/2 lg:basis-1/3 flex justify-center">
+                      <Link to="/shop-by-videos" className="best-item card-hover-glow">
+                        <div className="best-card cursor-pointer" style={{ aspectRatio: '7/10' }}>
+                          {isYouTube && ytId ? (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&showinfo=0&rel=0&modestbranding=1`}
+                              className="w-full h-full object-cover pointer-events-none rounded-2xl"
+                              allow="autoplay; encrypted-media"
+                              allowFullScreen
+                              title={v.title}
+                            />
+                          ) : (
+                            <video
+                              src={v.url}
+                              className="w-full object-cover rounded-lg"
+                              autoPlay
+
+                              loop
+                              playsInline
+                            />
+                          )}
+                          <div className="best-caption">{v.title}</div>
+                        </div>
                       </Link>
                     </CarouselItem>
                   );
                 })}
               </CarouselContent>
 
-              {/* Navigation buttons */}
-              <CarouselPrevious className="best-nav-btn left-2 sm:left-0" />
-              <CarouselNext className="best-nav-btn right-2 sm:right-0" />
+              <CarouselPrevious className="best-nav-btn left-0">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" fill="none" />
+                </svg>
+              </CarouselPrevious>
+
+              <CarouselNext className="best-nav-btn right-0">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2" fill="none" />
+                </svg>
+              </CarouselNext>
             </Carousel>
 
-            {/* Touch indicator for mobile */}
-            <div className="flex sm:hidden justify-center gap-2 mt-4">
-              {watchVideos.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => watchApi?.scrollTo(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${idx === 0 ? 'bg-[#14b8a6] w-6' : 'bg-gray-300'
-                    }`}
-                  aria-label={`Go to video ${idx + 1}`}
-                />
-              ))}
-            </div>
+            <div className="best-click-left" onClick={() => watchApi?.scrollPrev()}></div>
+            <div className="best-click-right" onClick={() => watchApi?.scrollNext()}></div>
           </div>
         ) : (
           <p className="text-center text-gray-500">No videos available yet.</p>
@@ -499,7 +495,7 @@ export default function HomePage() {
               <span className="text-[#3b2f27]">Why</span>
               <span style={{ color: "#14b8a6" }}> Choose Us</span>
             </h2>
-            <p className="ml-6 max-w-2xl mx-auto" style={{ color: "#cbd5e1" }}>
+            <p className="ml-6 max-w-2xl mx-auto text-center" style={{ color: "#cbd5e1" }}>
               Your confidence in our products is paramount. We stand behind every
               piece with unwavering guarantee and dedication.
             </p>
@@ -584,7 +580,7 @@ export default function HomePage() {
         {newProducts.length > 0 ? (
           <div className="relative">
             <Carousel
-              plugins={latestPlugins}
+
               opts={{
                 loop: true,
                 align: "center",
