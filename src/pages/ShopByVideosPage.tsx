@@ -53,15 +53,15 @@ export default function ShopByVideosPage() {
   };
 
   // 🔥 TRUE DIRECT STREAMING URL FOR GOOGLE DRIVE
-const getDriveDirectVideoUrl = (url: string) => {
-  const fileMatch = url.match(/\/file\/d\/([^/]+)/);
-  const paramMatch = url.match(/[?&]id=([^&]+)/);
-  const id = fileMatch?.[1] || paramMatch?.[1];
-  if (!id) return "";
+  const getDriveDirectVideoUrl = (url: string) => {
+    const fileMatch = url.match(/\/file\/d\/([^/]+)/);
+    const paramMatch = url.match(/[?&]id=([^&]+)/);
+    const id = fileMatch?.[1] || paramMatch?.[1];
+    if (!id) return "";
 
-  // m22 = 720p — best for autoplay
-  return `https://lh3.googleusercontent.com/d/${id}=m22`;
-};
+    // m22 = 720p — best for autoplay
+    return `https://lh3.googleusercontent.com/d/${id}=m22`;
+  };
 
 
   const isGoogleDrive = (url: string) => /drive\.google\.com/.test(url);
@@ -88,7 +88,7 @@ const getDriveDirectVideoUrl = (url: string) => {
           JSON.stringify({ event: 'command', func: command, args: [] }),
           '*'
         );
-      } catch {}
+      } catch { }
     };
 
     const observer = new IntersectionObserver(entries => {
@@ -99,7 +99,7 @@ const getDriveDirectVideoUrl = (url: string) => {
         if (video) {
           if (entry.isIntersecting) {
             video.muted = true;
-            video.play().catch(() => {});
+            video.play().catch(() => { });
           } else video.pause();
         }
 
@@ -123,9 +123,9 @@ const getDriveDirectVideoUrl = (url: string) => {
     if (!first) return;
     const v = first.querySelector('video') as HTMLVideoElement | null;
     const y = first.querySelector('iframe') as HTMLIFrameElement | null;
-    if (v) { v.muted = true; v.play().catch(()=>{}); }
+    if (v) { v.muted = true; v.play().catch(() => { }); }
     if (y && /youtube\.com\/embed/.test(y.src)) {
-      try { y.contentWindow?.postMessage(JSON.stringify({ event:'command', func:'playVideo', args:[] }), '*'); } catch {}
+      try { y.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'); } catch { }
     }
   }, [loading]);
 
@@ -171,7 +171,7 @@ const getDriveDirectVideoUrl = (url: string) => {
       <Navbar />
 
       {/* HERO HEADER */}
-<section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-7xl mx-auto mb-6">
           <div className="soft-card p-8 sm:p-12 card-appear">
             <h1 className="text-center custom-heading">
@@ -182,7 +182,7 @@ const getDriveDirectVideoUrl = (url: string) => {
             </p>
           </div>
         </div>
-    
+
 
 
         {/* LOADING SKELETON */}
@@ -199,7 +199,7 @@ const getDriveDirectVideoUrl = (url: string) => {
             ))}
           </div>
         ) : videos.length > 0 ? (
-          
+
           /**********************
            *  MAIN VIDEO GRID
            **********************/
@@ -218,54 +218,54 @@ const getDriveDirectVideoUrl = (url: string) => {
                       allowFullScreen
                     />
                   ) : isGoogleDrive(v.url) ? (
-  (() => {
-    const stream = getDriveDirectVideoUrl(v.url);
+                    (() => {
+                      const stream = getDriveDirectVideoUrl(v.url);
 
-    // If direct MP4 stream is available → autoplay video
-    if (stream) {
-      return (
-        <video
-          src={stream}
-          className="sbv-video object-cover"
-          autoPlay
-          muted
-          playsInline
-          loop
-          preload="auto"
-        />
-      );
-    }
+                      // If direct MP4 stream is available → autoplay video
+                      if (stream) {
+                        return (
+                          <video
+                            src={stream}
+                            className="sbv-video object-cover"
+                            autoPlay
+                            muted
+                            playsInline
+                            loop
+                            preload="auto"
+                          />
+                        );
+                      }
 
-    // Fallback to preview iframe
-    return (
-      <iframe
-        src={`${getDriveEmbedUrl(v.url)}?autoplay=1&mute=1`}
-        title={v.title}
-        className="sbv-video"
-        allow="autoplay; fullscreen"
-        referrerPolicy="no-referrer"
-        allowFullScreen
-      />
-    );
-  })()
-)
- : (
-                    <video
-                      src={v.url}
-                      className="sbv-video object-cover"
-                      playsInline
-                      muted
-                      autoPlay
-                      loop
-                      preload="auto"
-                    />
-                  )}
+                      // Fallback to preview iframe
+                      return (
+                        <iframe
+                          src={`${getDriveEmbedUrl(v.url)}?autoplay=1&mute=1`}
+                          title={v.title}
+                          className="sbv-video"
+                          allow="autoplay; fullscreen"
+                          referrerPolicy="no-referrer"
+                          allowFullScreen
+                        />
+                      );
+                    })()
+                  )
+                    : (
+                      <video
+                        src={v.url}
+                        className="sbv-video object-cover"
+                        playsInline
+                        muted
+                        autoPlay
+                        loop
+                        preload="auto"
+                      />
+                    )}
 
                   <div className="sbv-actions">
                     <button className="p-2 rounded-full bg-white shadow" onClick={() => toggleLike(v.id)}>
                       <Heart className="w-5 h-5" />
                     </button>
-                    <span className="text-xs text-gray-700">{likes[v.id] || 0}</span>
+                    <span className="text-xs text-gray-700">{likes[v.id] || ""}</span>
 
                     <button className="p-2 rounded-full bg-white shadow" onClick={() => setOpen(v)}>
                       <MessageCircle className="w-5 h-5" />
@@ -306,9 +306,9 @@ const getDriveDirectVideoUrl = (url: string) => {
       {/* VIDEO POPUP MODAL */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-             onClick={() => setOpen(null)}>
+          onClick={() => setOpen(null)}>
           <div className="bg-white rounded-xl shadow-xl w-[94vw] md:w-[900px] overflow-hidden"
-               onClick={(e) => e.stopPropagation()}>
+            onClick={(e) => e.stopPropagation()}>
 
             <div className="relative" style={{ aspectRatio: '16 / 9' }}>
               {isYouTube(open.url) ? (
