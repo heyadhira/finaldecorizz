@@ -329,6 +329,10 @@ export default function ProductDetailPage() {
       if (targetImage && selectedImage !== targetImage) {
         setSelectedImage(targetImage);
       }
+    } else {
+      if (product.image && selectedImage !== product.image) {
+        setSelectedImage(product.image);
+      }
     }
   }, [selectedFormat, selectedColor, product]);
 
@@ -896,7 +900,7 @@ export default function ProductDetailPage() {
                     </button>
                   );
                 })}
-                <button onClick={() => { setSelectedColor(defaultColor); setSelectedSize(defaultSize); setSelectedFormat(defaultFormat); }} className="px-6 py-2 rounded-lg border" style={{ borderColor: '#334155', color: '#e5e7eb' }}>Clear</button>
+                {/* <button onClick={() => { setSelectedColor(defaultColor); setSelectedSize(defaultSize); setSelectedFormat(defaultFormat); }} className="px-6 py-2 rounded-lg border" style={{ borderColor: '#334155', color: '#e5e7eb' }}>Clear</button> */}
               </div>
 
             </div>
